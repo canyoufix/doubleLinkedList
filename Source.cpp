@@ -4,8 +4,11 @@
 using namespace std;
 
 
+
 template <class T> class List {
 private:
+	friend class Iterator;
+
 	class Node { //Узел
 	public:
 		Node(T data) { //Конструктор по умолчанию
@@ -27,6 +30,7 @@ private:
 public:
 	List();
 	~List();
+	
 
 	Node* pushFront(T data) { //Добавить элемент в начало списка
 		Node* ptr = new Node(data); //Выделение памяти
@@ -96,19 +100,40 @@ public:
 		size--;
 	}
 
-	Node* GetPtrByIndex(int index) {
-		Node* ptr = head;
-		
-		int i = 0;
-		while (i != index) {
-			if (ptr == NULL) { // До конца списка, либо списка не существует
-				return ptr;
-			}
-			ptr = ptr->pNext;
-			i++;
-		}
+	int GetSize() {
+		return size;
+	}
+	Node* GetHead() {
+		return head;
+	}
 
-		return ptr;
+	Node* GetPtrByIndex(int index) {
+		if (index <= (GetSize()/2)) {
+			Node* ptr = head;
+
+			int i = 0;
+			while (i != index) {
+				if (ptr == NULL) { // До конца списка, либо списка не существует
+					return ptr;
+				}
+				ptr = ptr->pNext;
+				i++;
+			}
+			return ptr;
+		}
+		else {
+			Node* ptr = tail;
+
+			int i = GetSize() - 1;
+			while (i != index) {
+				if (ptr == NULL) { // До конца списка, либо списка не существует
+					return ptr;
+				}
+				ptr = ptr->pPrev;
+				i--;
+			}
+			return ptr;
+		}
 	}
 
 	T GetIndexByData(T data) {
@@ -127,9 +152,6 @@ public:
 		}
 		return -1;
 	}
-
-
-
 
 	Node* operator [] (int index) {
 		return GetPtrByIndex(index);
@@ -195,13 +217,7 @@ public:
 		cout << endl;
 	}
 
-	int GetSize() {
-		return size;
-	}
-	Node* GetHead() {
-		return head;
-	}
-
+	
 	bool IsValueInList(T data) {
 		for (Node* ptr = head; ptr != NULL; ptr = ptr->pNext) {
 			if (data == ptr->data) {
@@ -223,7 +239,6 @@ public:
 		}
 	}
 
-
 	bool ChangeValueByIndex(int index, T value) {
 		Node* ptr = GetPtrByIndex(index);
 
@@ -236,6 +251,63 @@ public:
 		}
 	}
 
+
+
+	class Iterator
+	{
+	private:
+		List* ptr; //указатель на объект коллекции
+		Node* current; //указатель на текущий элемент коллекции
+
+	public:
+		Iterator() {
+			begin();
+		}
+
+		Iterator& operator++() {
+			if (current = current->pNext) {
+				return *this;
+			}
+			return NULL;
+		}
+
+
+		void begin() {//установка на первый
+			current = ptr->head;
+		}
+		void end() {//установка на последний
+			current = ptr->tail;
+		}
+		void next() { //установка на следующий
+			if (current->next != NULL) {
+				current = current->next;
+			}
+			else {
+				cout << "Eror: Out of range." << endl;
+			}
+		}
+		void prev() {//установка на предыдущий
+			if (current != NULL) {
+				current = current->prev;
+			}
+			else {
+				cout << "Eror: Out of range." << endl;
+			}
+		}
+		bool is_off() const { //проверка выхода итератора за пределы коллекции
+			return (current == NULL);
+		}
+
+		T& operator*() { //доспуп к данным текущего элемента
+			if (current != NULL) {
+				return current->data;
+			}
+			else {
+				cout << "Eror: Out of range." << endl;
+			}
+		}
+	};
+	friend class Iterator;
 
 };
 
@@ -250,12 +322,14 @@ template<class T> List<T>::~List() { //Деструктор по умолчанию
 }
 
 
+
+
 int main() {
 	setlocale(LC_ALL, "ru");
-	
 	int key = -1;
 	
 	List<int> newList;
+	
 
 	while (key != 0)
 	{
@@ -271,6 +345,7 @@ int main() {
 			<< "[9]  Add by index" << endl
 			<< "[10] Delete by value" << endl
 			<< "[11] Delete by index" << endl
+			<< "[12] Request direct iterator" << endl
 			<< "[99] Print List" << endl
 			<< "[0] Exit" << endl
 		    << "Enter number: ";
@@ -332,7 +407,7 @@ int main() {
 			cin >> data;
 
 			if (newList.ChangeValueByIndex(index, data)) {
-				cout << endl << "New value is: " << data << endl;
+				cout << "New value is: " << data << endl;
 			}
 			else {
 				cout << "Incorrect index." << endl;
@@ -405,6 +480,10 @@ int main() {
 
 			break;
 		}
+		case 12: {
+			cout << "Iterator: " << endl;
+			break;
+		}
 		case 99: {
 			newList.printList();
 			break;
@@ -417,7 +496,3 @@ int main() {
 
 	return 0;
 }
-
-
-
-
