@@ -23,17 +23,10 @@ private:
 
 	int size;
 
-public:
-	List() { //Конструктор по умолчанию
-		size = 0;
-		head = tail = NULL;
-	}
 
-	~List() { //Деструктор по умолчанию
-		while (head != NULL) {
-			popFront();
-		}
-	}
+public:
+	List();
+	~List();
 
 	Node* pushFront(T data) { //Добавить элемент в начало списка
 		Node* ptr = new Node(data); //Выделение памяти
@@ -46,6 +39,7 @@ public:
 		}
 		head = ptr;
 
+		size++;
 		return ptr;
 	}
 
@@ -60,6 +54,7 @@ public:
 		}
 		tail = ptr;
 
+		size++;
 		return ptr;
 	}
 
@@ -78,6 +73,8 @@ public:
 
 		delete head;
 		head = ptr;
+
+		size--;
 	}
 
 	void popBack() { //Удалить элемент с конца
@@ -95,9 +92,11 @@ public:
 
 		delete tail;
 		tail = ptr;
+
+		size--;
 	}
 
-	Node* GetByIndex(int index) { //Инкапсуляция GETTER
+	Node* GetPtrByIndex(int index) {
 		Node* ptr = head;
 		
 		int i = 0;
@@ -112,12 +111,32 @@ public:
 		return ptr;
 	}
 
-	Node* operator [] (int index) {
-		return GetByIndex(index);
+	T GetIndexByData(T data) {
+		Node* ptr = head;
+
+		int i = 0;
+		while (i != size) {
+			if (ptr == NULL) { // До конца списка, либо списка не существует
+				return -1;
+			}
+			if (ptr->data == data) {
+				return i;
+			}
+			ptr = ptr->pNext;
+			i++;
+		}
+		return -1;
 	}
 
-	Node* insert(int index, T data) { //Вставка по индексу
-		Node* right = GetByIndex(index); //Наш элемент
+
+
+
+	Node* operator [] (int index) {
+		return GetPtrByIndex(index);
+	}
+
+	Node* insertByIndex(int index, T data) { //Вставка по индексу
+		Node* right = GetPtrByIndex(index); //Наш элемент
 		if (right == NULL) { //Если это конец списка
 			return pushBack(data);
 		}
@@ -133,11 +152,12 @@ public:
 		left->pNext = ptr;
 		right->pPrev = ptr;
 
+		size++;
 		return ptr;
 	}
 
 	void deleleByIndex(int index) { //Удалить элемент по индексу
-		Node* ptr = GetByIndex(index); 
+		Node* ptr = GetPtrByIndex(index); 
 		if (ptr == NULL) { //Если элемента нет
 			return;
 		}
@@ -156,6 +176,7 @@ public:
 		left->pNext = right;
 		right->pPrev = left;
 
+		size--;
 		delete ptr;
 	}
 
@@ -173,32 +194,230 @@ public:
 		}
 		cout << endl;
 	}
+
+	int GetSize() {
+		return size;
+	}
+	Node* GetHead() {
+		return head;
+	}
+
+	bool IsValueInList(T data) {
+		for (Node* ptr = head; ptr != NULL; ptr = ptr->pNext) {
+			if (data == ptr->data) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	T GetValueByIndex(int index) {
+		Node* ptr = GetPtrByIndex(index);
+		if (ptr != NULL) {
+			return ptr->data;
+
+		}
+		else {
+			return -1;
+		}
+	}
+
+
+	bool ChangeValueByIndex(int index, T value) {
+		Node* ptr = GetPtrByIndex(index);
+
+		if (ptr != NULL) {
+			ptr->data = value;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+
 };
 
-void startMenu(int *key) {
-	cout << "[1] Инициализировать список" << endl;
-	cout << "[0] Выход" << endl;
-	
-	cout << "*** Введите значение: ";
-	cin >> *key;
+template <class T> List<T>::List() { //Конструктор по умолчанию
+	size = 0;
+	head = tail = NULL;
+}
+template<class T> List<T>::~List() { //Деструктор по умолчанию
+	while (head != NULL) {
+		popFront();
+	}
 }
 
 
 int main() {
 	setlocale(LC_ALL, "ru");
 	
+	int key = -1;
+	
 	List<int> newList;
 
+	while (key != 0)
+	{
+		cout << endl << "Menu:" << endl
+			<< "[1]  Size of List" << endl
+			<< "[2]  Clear List" << endl
+			<< "[3]  Is List empty?" << endl
+			<< "[4]  Is value in List?" << endl
+			<< "[5]  Get value by index" << endl
+			<< "[6]  Change value by index" << endl
+			<< "[7]  Get index by value" << endl
+			<< "[8]  Add to List" << endl
+			<< "[9]  Add by index" << endl
+			<< "[10] Delete by value" << endl
+			<< "[11] Delete by index" << endl
+			<< "[99] Print List" << endl
+			<< "[0] Exit" << endl
+		    << "Enter number: ";
+
+		while (!(cin >> key)) {
+			cin.clear();
+			while (cin.get() != '\n');
+			cout << "Incorrect input! \nEnter number: ";
+		}
+
+		switch (key)
+		{
+		case 1: {
+			cout << "Size of List: " << newList.GetSize() << endl;
+			break;
+		}
+		case 2: {
+			while (newList.GetHead() != NULL) {
+				newList.popFront();
+			}
+			cout << "List is clear." << endl;
+			break;
+		}
+		case 3: {
+			if (newList.GetSize() == 0) {
+				cout << "List is empty." << endl;
+			}
+			else {
+				cout << "List isn't empty." << endl;
+			}
+			break;
+		}
+		case 4: {
+			int data = 0;
+			cout << "Enter value: ";
+			cin >> data;
+
+			if (newList.IsValueInList(data)) {
+				cout << "Value is in the list" << endl;
+			}
+			else {
+				cout << "Value is not in the list" << endl;
+			}
+
+			break;
+		}
+		case 5: {
+			int index = 0;
+			cout << "Enter index: ";
+			cin >> index;
+			cout << "Value: " << newList.GetValueByIndex(index) << endl;
+			break;
+		}
+		case 6: {
+			int index = 0, data = 0;
+			cout << "Enter index: ";
+			cin >> index;
+			cout << "Enter new value: ";
+			cin >> data;
+
+			if (newList.ChangeValueByIndex(index, data)) {
+				cout << endl << "New value is: " << data << endl;
+			}
+			else {
+				cout << "Incorrect index." << endl;
+			}
+			break;
+		}
+		case 7: {
+			int data = 0, index = -1;
+			cout << "Enter value: ";
+			cin >> data;
+
+			index = newList.GetIndexByData(data);
+			if (index != -1) {
+				cout << endl << "Index is: " << index << endl;
+			}
+			else {
+				cout << "Incorrect value." << endl;
+			}
+			break;
+		}
+		case 8: {
+			int data = 0;
+			cout << "Enter value to add: ";
+			cin >> data;
+			newList.pushBack(data);
+			break;
+
+		}
+		case 9: {
+			int index = 0, data = 0;
+			cout << "Enter index: ";
+			cin >> index;
+			cout << "Enter value: ";
+			cin >> data;
+
+			newList.insertByIndex(index, data);
+
+			break;
+		}
+		case 10: {
+			int value = 0;
+			cout << "Enter value: ";
+			cin >> value;
+
+			int index = newList.GetIndexByData(value);
+			if (index != -1) {
+				newList.deleleByIndex(index);
+				cout << "Value is delete." << endl;
+			}
+			else {
+				cout << "Incorrect value." << endl;
+			}
+			
+			break;
+		}
+		case 11: {
+			int index = 0;
+			int size = newList.GetSize();
+			cout << "Enter index: ";
+			cin >> index;
 
 
+			if (index < size && index >= 0) {
+				newList.deleleByIndex(index);
+				cout << "Value is delete." << endl;
+			}
+			else {
+				cout << "Incorrect index." << endl;
+			}
 
-	newList.pushBack(1.5);
+			break;
+		}
+		case 99: {
+			newList.printList();
+			break;
+		}
 
-	newList.pushBack(123);
-
-	newList.pushBack(455);
-
-	newList.printList();
+		default:
+			break;
+		}
+	}
 
 	return 0;
 }
+
+
+
+
