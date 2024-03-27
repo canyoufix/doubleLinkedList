@@ -4,11 +4,8 @@
 using namespace std;
 
 
-
 template <class T> class List {
 private:
-	friend class Iterator;
-
 	class Node { //Узел
 	public:
 		Node(T data) { //Конструктор по умолчанию
@@ -23,14 +20,152 @@ private:
 
 	Node* head;
 	Node* tail;
-
 	int size;
 
 
 public:
 	List();
+	List(const List<T>& other);
 	~List();
+
+	class Iterator;
+	class ReverseIterator;
 	
+	//GETTER
+	int GetSize() { //1
+		return size;
+	}
+
+	//Iterator reverseIterator
+	Iterator begin() {
+		Iterator backup;
+		backup.ptr = this;
+		backup.current = head;
+
+		return backup;
+	}
+	Iterator end() {
+		Iterator It;
+		It.ptr = this;
+		It.current = NULL;
+
+		return It;
+	}
+	ReverseIterator rbegin() {
+		ReverseIterator reverseIt;
+		reverseIt.ptr = this;
+		reverseIt.current = tail;
+
+		return reverseIt;
+	}
+	ReverseIterator rend() {
+		ReverseIterator reverseIt;
+		reverseIt.ptr = this;
+		reverseIt.current = NULL;
+
+		return reverseIt;
+	}
+	//End Iterator;
+
+
+	bool Clear() { //2
+		int size = this->size;
+		if (size != 0) {
+			for (int i = 0; i < size; i++) {
+				popBack();
+			}
+			begin();
+			rbegin();
+
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	bool IsEmpty() { //3
+		if (this->size != 0) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+
+	bool IsValueInList(T data) { //4
+		for (Node* ptr = head; ptr != NULL; ptr = ptr->pNext) {
+			if (data == ptr->data) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	T GetValueByIndex(int index) { //5
+		
+		Node* ptr = GetPtrByIndex(index);
+
+		if (ptr != NULL) {
+			return ptr->data;
+		}
+		else {
+			throw exception();
+		}
+	}
+
+	bool ChangeValueByIndex(int index, T value) { //6
+		Node* ptr = GetPtrByIndex(index);
+
+		if (ptr != NULL) {
+			ptr->data = value;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	int GetIndexByValue(T data) { //7
+		Node* ptr = head;
+
+		int i = 0;
+		while (i != size) {
+			if (ptr == NULL) {
+				return -1;
+			}
+			if (ptr->data == data) {
+				return i;
+			}
+			ptr = ptr->pNext;
+			i++;
+		}
+		return -1;
+	}
+
+	bool DeleteByIndex(int index) { //11
+		Node* ptr = GetPtrByIndex(index);
+		if (ptr == NULL) { //Если элемента нет
+			return false;
+		}
+
+		if (ptr->pPrev == NULL) { //Если это первый элемент
+			return popFront();
+		}
+		if (ptr->pNext == NULL) { //Если это последний элемент
+			return popBack();
+		}
+
+		Node* left = ptr->pPrev;
+		Node* right = ptr->pNext;
+		left->pNext = right;
+		right->pPrev = left;
+
+		size--;
+		delete ptr;
+
+		return true;
+	}
 
 	Node* pushFront(T data) { //Добавить элемент в начало списка
 		Node* ptr = new Node(data); //Выделение памяти
@@ -47,7 +182,7 @@ public:
 		return ptr;
 	}
 
-	Node* pushBack(T data) { //Добавить элемент в конец списка
+	Node* pushBack(T data) { //8 Добавить элемент в конец списка
 		Node* ptr = new Node(data);
 		ptr->pPrev = tail;
 		if (tail != NULL) { //Если хвост
@@ -62,9 +197,9 @@ public:
 		return ptr;
 	}
 
-	void popFront() { //Удалить элемент с начала
+	bool popFront() { //Удалить элемент с начала
 		if (head == NULL) { //Списка нету
-			return;
+			return false;
 		}
 
 		Node* ptr = head->pNext; //Указатель на второй элемент
@@ -79,11 +214,13 @@ public:
 		head = ptr;
 
 		size--;
+
+		return true;
 	}
 
-	void popBack() { //Удалить элемент с конца
+	bool popBack() { //Удалить элемент с конца
 		if (tail == NULL) { //Существует ли хоть 1 объект
-			return;
+			return false;
 		}
 
 		Node* ptr = tail->pPrev; //Предпоследний объект
@@ -98,66 +235,47 @@ public:
 		tail = ptr;
 
 		size--;
-	}
 
-	int GetSize() {
-		return size;
-	}
-	Node* GetHead() {
-		return head;
+		return true;
 	}
 
 	Node* GetPtrByIndex(int index) {
-		if (index <= (GetSize()/2)) {
-			Node* ptr = head;
+		if (index >= 0 && index < this->size)
+		{
+			if (index <= (GetSize() / 2)) {
+				Node* ptr = head;
+				int i = 0;
 
-			int i = 0;
-			while (i != index) {
-				if (ptr == NULL) { // До конца списка, либо списка не существует
-					return ptr;
+				while (i != index) {
+					if (ptr == NULL) { // До конца списка, либо списка не существует
+						return ptr;
+					}
+					ptr = ptr->pNext;
+					i++;
 				}
-				ptr = ptr->pNext;
-				i++;
+				return ptr;
 			}
-			return ptr;
+			else {
+				Node* ptr = tail;
+
+				int i = GetSize() - 1;
+				while (i != index) {
+					if (ptr == NULL) { // До конца списка, либо списка не существует
+						return ptr;
+					}
+					ptr = ptr->pPrev;
+					i--;
+				}
+				return ptr;
+			}
 		}
 		else {
-			Node* ptr = tail;
-
-			int i = GetSize() - 1;
-			while (i != index) {
-				if (ptr == NULL) { // До конца списка, либо списка не существует
-					return ptr;
-				}
-				ptr = ptr->pPrev;
-				i--;
-			}
-			return ptr;
+			return NULL;
 		}
+
 	}
 
-	T GetIndexByData(T data) {
-		Node* ptr = head;
-
-		int i = 0;
-		while (i != size) {
-			if (ptr == NULL) { // До конца списка, либо списка не существует
-				return -1;
-			}
-			if (ptr->data == data) {
-				return i;
-			}
-			ptr = ptr->pNext;
-			i++;
-		}
-		return -1;
-	}
-
-	Node* operator [] (int index) {
-		return GetPtrByIndex(index);
-	}
-
-	Node* insertByIndex(int index, T data) { //Вставка по индексу
+	Node* InsertByIndex(int index, T data) { //Вставка по индексу
 		Node* right = GetPtrByIndex(index); //Наш элемент
 		if (right == NULL) { //Если это конец списка
 			return pushBack(data);
@@ -178,29 +296,7 @@ public:
 		return ptr;
 	}
 
-	void deleleByIndex(int index) { //Удалить элемент по индексу
-		Node* ptr = GetPtrByIndex(index); 
-		if (ptr == NULL) { //Если элемента нет
-			return;
-		}
-
-		if (ptr->pPrev == NULL) { //Если это первый элемент
-			popFront();
-			return;
-		}
-		if (ptr->pNext == NULL) { //Если это последний элемент
-			popBack();
-			return;
-		}
-
-		Node* left = ptr->pPrev;
-		Node* right = ptr->pNext;
-		left->pNext = right;
-		right->pPrev = left;
-
-		size--;
-		delete ptr;
-	}
+	
 
 	void printList() {
 		cout << "DATA:\t";
@@ -218,84 +314,74 @@ public:
 	}
 
 	
-	bool IsValueInList(T data) {
-		for (Node* ptr = head; ptr != NULL; ptr = ptr->pNext) {
-			if (data == ptr->data) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	T GetValueByIndex(int index) {
-		Node* ptr = GetPtrByIndex(index);
-		if (ptr != NULL) {
-			return ptr->data;
-
-		}
-		else {
-			return -1;
-		}
-	}
-
-	bool ChangeValueByIndex(int index, T value) {
-		Node* ptr = GetPtrByIndex(index);
-
-		if (ptr != NULL) {
-			ptr->data = value;
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-
-
-
+	
 	class Iterator
 	{
 	private:
 		List* ptr; //указатель на объект коллекции
 		Node* current; //указатель на текущий элемент коллекции
-
 	public:
+		friend class List<T>;
+
 		Iterator() {
-			begin();
+			ptr = NULL;
+			current = NULL;
 		}
-
-		Iterator& operator++() {
-			if (current = current->pNext) {
-				return *this;
-			}
-			return NULL;
-		}
-
-
-		void begin() {//установка на первый
-			current = ptr->head;
-		}
-		void end() {//установка на последний
-			current = ptr->tail;
-		}
-		void next() { //установка на следующий
-			if (current->next != NULL) {
-				current = current->next;
-			}
-			else {
-				cout << "Eror: Out of range." << endl;
-			}
-		}
-		void prev() {//установка на предыдущий
+	
+		T& operator*() { //доспуп к данным текущего элемента
 			if (current != NULL) {
-				current = current->prev;
+				return current->data;
 			}
 			else {
-				cout << "Eror: Out of range." << endl;
+				throw exception();
 			}
 		}
-		bool is_off() const { //проверка выхода итератора за пределы коллекции
-			return (current == NULL);
+
+		Node* operator++(int) {
+			if (ptr != NULL) {
+				if (current != NULL)
+				{
+					if (current->pNext != NULL) {
+						current = current->pNext;
+					}
+				}
+			}
+			else {
+				throw exception();
+			}
+			
+			return current;
+		}
+
+		Node* operator--(int) {
+			if (ptr != NULL) {
+				if (current != NULL)
+				{
+					if (current->pPrev != NULL) {
+						current = current->pPrev;
+					}
+				}
+			}
+			else {
+				throw exception();
+			}
+
+			return current;
+		}
+
+	};
+
+	class ReverseIterator
+	{
+	private:
+		List* ptr; //указатель на объект коллекции
+		Node* current; //указатель на текущий элемент коллекции
+	public:
+		friend class List<T>;
+
+		ReverseIterator() {
+			ptr = NULL;
+			current = NULL;
 		}
 
 		T& operator*() { //доспуп к данным текущего элемента
@@ -303,17 +389,60 @@ public:
 				return current->data;
 			}
 			else {
-				cout << "Eror: Out of range." << endl;
+				throw exception();
 			}
 		}
-	};
-	friend class Iterator;
 
+		Node* operator--(int) {
+			if (ptr != NULL) {
+				if (current != NULL) {
+					if (current->pNext != NULL) {
+						current = current->pNext;
+					}
+				}
+			}
+			else {
+				throw exception();
+			}
+
+			return current;
+		}
+
+		Node* operator++(int) {
+			if (ptr != NULL) {
+				if (current != NULL)
+				{
+					if (current->pPrev != NULL) {
+						current = current->pPrev;
+					}
+				}
+			}
+			else {
+				throw exception();
+			}
+			
+			return current;
+		}
+	};
+
+	
 };
 
 template <class T> List<T>::List() { //Конструктор по умолчанию
 	size = 0;
 	head = tail = NULL;
+}
+template<class T> List<T>::List(const List<T>& other) {
+	size = 0;
+	head = tail = NULL;
+	
+	Node* backup = other.head; //начало списка, откуда копируем
+	while (backup != NULL) //пока не конец списка
+	{
+		this->pushBack(backup->data);
+		backup = backup->pNext;
+	}
+
 }
 template<class T> List<T>::~List() { //Деструктор по умолчанию
 	while (head != NULL) {
@@ -329,7 +458,8 @@ int main() {
 	int key = -1;
 	
 	List<int> newList;
-	
+	List<int>::Iterator begin, end;
+	List<int>::ReverseIterator rbegin, rend;
 
 	while (key != 0)
 	{
@@ -345,7 +475,14 @@ int main() {
 			<< "[9]  Add by index" << endl
 			<< "[10] Delete by value" << endl
 			<< "[11] Delete by index" << endl
-			<< "[12] Request direct iterator" << endl
+			<< "[12] Request begin() iterator" << endl
+			<< "[13] Request rbegin() reverse iterator" << endl
+			<< "[14] Request end() iterator" << endl
+			<< "[15] Request rend() reverse iterator" << endl
+			<< "[16] Interator ++" << endl
+			<< "[17] Iterator --" << endl
+			<< "[18] reverse Iterator ++" << endl
+			<< "[19] reverse Iterator --" << endl
 			<< "[99] Print List" << endl
 			<< "[0] Exit" << endl
 		    << "Enter number: ";
@@ -356,142 +493,162 @@ int main() {
 			cout << "Incorrect input! \nEnter number: ";
 		}
 
-		switch (key)
+		try
 		{
-		case 1: {
-			cout << "Size of List: " << newList.GetSize() << endl;
-			break;
-		}
-		case 2: {
-			while (newList.GetHead() != NULL) {
-				newList.popFront();
+			switch (key)
+			{
+			case 1: {
+				cout << "Size of List: " << newList.GetSize() << endl;
+				break;
 			}
-			cout << "List is clear." << endl;
-			break;
-		}
-		case 3: {
-			if (newList.GetSize() == 0) {
-				cout << "List is empty." << endl;
+			case 2: {
+				cout << "Result:" << newList.Clear() << endl;
+				break;
 			}
-			else {
-				cout << "List isn't empty." << endl;
+			case 3: {
+				cout << "Result:" << newList.IsEmpty() << endl;
+				break;
 			}
-			break;
-		}
-		case 4: {
-			int data = 0;
-			cout << "Enter value: ";
-			cin >> data;
+			case 4: {
+				int data = 0;
+				cout << "Enter value: ";
+				cin >> data;
 
-			if (newList.IsValueInList(data)) {
-				cout << "Value is in the list" << endl;
-			}
-			else {
-				cout << "Value is not in the list" << endl;
-			}
+				cout << "Result: " << newList.IsValueInList(data) << endl;
 
-			break;
-		}
-		case 5: {
-			int index = 0;
-			cout << "Enter index: ";
-			cin >> index;
-			cout << "Value: " << newList.GetValueByIndex(index) << endl;
-			break;
-		}
-		case 6: {
-			int index = 0, data = 0;
-			cout << "Enter index: ";
-			cin >> index;
-			cout << "Enter new value: ";
-			cin >> data;
-
-			if (newList.ChangeValueByIndex(index, data)) {
-				cout << "New value is: " << data << endl;
+				break;
 			}
-			else {
-				cout << "Incorrect index." << endl;
-			}
-			break;
-		}
-		case 7: {
-			int data = 0, index = -1;
-			cout << "Enter value: ";
-			cin >> data;
-
-			index = newList.GetIndexByData(data);
-			if (index != -1) {
-				cout << endl << "Index is: " << index << endl;
-			}
-			else {
-				cout << "Incorrect value." << endl;
-			}
-			break;
-		}
-		case 8: {
-			int data = 0;
-			cout << "Enter value to add: ";
-			cin >> data;
-			newList.pushBack(data);
-			break;
-
-		}
-		case 9: {
-			int index = 0, data = 0;
-			cout << "Enter index: ";
-			cin >> index;
-			cout << "Enter value: ";
-			cin >> data;
-
-			newList.insertByIndex(index, data);
-
-			break;
-		}
-		case 10: {
-			int value = 0;
-			cout << "Enter value: ";
-			cin >> value;
-
-			int index = newList.GetIndexByData(value);
-			if (index != -1) {
-				newList.deleleByIndex(index);
-				cout << "Value is delete." << endl;
-			}
-			else {
-				cout << "Incorrect value." << endl;
-			}
+			case 5: {
+				int index = 0;
+				cout << "Enter index: ";
+				cin >> index;
+				
+				cout << "Result: ";
 			
-			break;
-		}
-		case 11: {
-			int index = 0;
-			int size = newList.GetSize();
-			cout << "Enter index: ";
-			cin >> index;
+				cout << newList.GetValueByIndex(index) << endl;
 
-
-			if (index < size && index >= 0) {
-				newList.deleleByIndex(index);
-				cout << "Value is delete." << endl;
+				break;
 			}
-			else {
-				cout << "Incorrect index." << endl;
+			case 6: {
+				int index = 0, data = 0;
+				cout << "Enter index: ";
+				cin >> index;
+				cout << "Enter new value: ";
+				cin >> data;
+
+				cout << "Result: ";
+				cout << newList.ChangeValueByIndex(index, data) << endl;
+
+				break;
+			}
+			case 7: {
+				int data = 0, index = -1;
+				cout << "Enter value: ";
+				cin >> data;
+
+				cout << "Result: " << newList.GetIndexByValue(data) << endl;
+
+				break;
+			}
+			case 8: {
+				int data = 0;
+				cout << "Enter value to add: ";
+				cin >> data;
+				newList.pushBack(data);
+				break;
+
+			}
+			case 9: {
+				int index = 0, data = 0;
+				cout << "Enter index: ";
+				cin >> index;
+				cout << "Enter value: ";
+				cin >> data;
+
+				newList.InsertByIndex(index, data);
+
+				break;
+			}
+			case 10: {
+				int value = 0;
+				cout << "Enter value: ";
+				cin >> value;
+
+				int index = newList.GetIndexByValue(value);
+				if (index != -1) {
+					newList.DeleteByIndex(index);
+					cout << "Value is delete." << endl;
+				}
+				else {
+					cout << "Incorrect value." << endl;
+				}
+
+				break;
+			}
+			case 11: {
+				int index = 0;
+				cout << "Enter index: ";
+				cin >> index;
+
+				cout << "Result: " << newList.DeleteByIndex(index);
+
+				break;
+			}
+			case 12: {
+				begin = newList.begin();
+				cout << "Iterator begin(): " << *begin << endl;
+
+				break;
+			}
+			case 13: {
+				rbegin = newList.rbegin();
+				cout << "reverseIterator rbegin(): " << *rbegin << endl;
+
+				break;
+			}
+			case 14: {
+				end = newList.end();
+				cout << "Iterator end(): " << *end << endl;
+				break;
+			}
+			case 15: {
+				rend = newList.rend();
+				cout << "reverseIterator rend(): " << *rend << endl;
+				break;
+			}
+			case 16:
+				begin++;
+				cout << "Iterator begin()++: " << *begin << endl;
+
+				break;
+			case 17:
+				begin--;
+				cout << "Iterator begin()--: " << *begin << endl;
+
+				break;
+			case 18:
+				rbegin++;
+				cout << "Iterator rbegin()++: " << *rbegin << endl;
+
+				break;
+			case 19:
+				rbegin--;
+				cout << "Iterator rbegin()--: " << *rbegin << endl;
+				break;
+			case 99: {
+				newList.printList();
+				break;
 			}
 
-			break;
+			default:
+				break;
+			}
 		}
-		case 12: {
-			cout << "Iterator: " << endl;
-			break;
+		catch (const std::exception&)
+		{
+			cout << "Error." << endl;
 		}
-		case 99: {
-			newList.printList();
-			break;
-		}
-
-		default:
-			break;
-		}
+		
 	}
 
 	return 0;
