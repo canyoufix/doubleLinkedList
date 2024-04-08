@@ -68,20 +68,10 @@ public:
 	}
 	//End Iterator;
 
-
-	bool Clear() { //2
+	void Clear() { //2
 		int size = this->size;
-		if (size != 0) {
-			for (int i = 0; i < size; i++) {
-				popBack();
-			}
-			begin();
-			rbegin();
-
-			return true;
-		}
-		else {
-			return false;
+		for (int i = 0; i < size; i++) {
+			popBack();
 		}
 	}
 
@@ -384,6 +374,9 @@ public:
 		bool GetStatus() {
 			return isBlocked;
 		}
+		void SetBlock() {
+			isBlocked = true;
+		}
 	
 		T& operator*() { //доспуп к данным текущего элемента
 			if (current != NULL) {
@@ -453,6 +446,9 @@ public:
 
 		bool GetStatus() {
 			return isBlocked;
+		}
+		void SetBlock() {
+			isBlocked = true;
 		}
 
 		T& operator*() { //доспуп к данным текущего элемента
@@ -554,8 +550,8 @@ int main() {
 			<< "[9]  Add by index" << endl
 			<< "[10] Delete by value" << endl
 			<< "[11] Delete by index" << endl
-			<< "[12] Request begin() iterator" << endl
-			<< "[13] Request rbegin() reverse iterator" << endl
+			<< "[12] Install begin() iterator" << endl
+			<< "[13] Install rbegin() reverse iterator" << endl
 			<< "[14] Interator ++" << endl
 			<< "[15] Iterator --" << endl
 			<< "[16] reverse Iterator ++" << endl
@@ -563,6 +559,8 @@ int main() {
 			<< "[18] Request iterator status" << endl
 			<< "[19] Request reverse iterator status" << endl
 			<< "[20] Change value by iterator" << endl
+			<< "[21] Where iterator?" << endl
+			<< "[22] Where reverse_iterator?" << endl
 			<< "[99] Print List" << endl
 			<< "[123] Exit" << endl
 		    << "Enter number: ";
@@ -583,9 +581,11 @@ int main() {
 			}
 
 			case 2: {
-				cout << "Result:" << newList.Clear() << endl;
+				newList.Clear();
 				begin = newList.begin();
+				begin.SetBlock();
 				rbegin = newList.rbegin();
+				rbegin.SetBlock();
 				break;
 			}
 
@@ -657,6 +657,8 @@ int main() {
 				cout << "Enter value: ";
 				cin >> value;
 				cout << "Result: " << newList.DeleteByValue(value) << endl;
+				begin = newList.begin();
+				rbegin = newList.rbegin();
 				break;
 			}
 
@@ -665,6 +667,8 @@ int main() {
 				cout << "Enter index: ";
 				cin >> index;
 				cout << "Result: " << newList.DeleteByIndex(index) << endl;
+				begin = newList.begin();
+				rbegin = newList.rbegin();
 				break;
 			}
 
@@ -703,12 +707,21 @@ int main() {
 			case 18:
 				cout << "Result: " << begin.GetStatus() << endl;
 				break;
+
 			case 19:
 				cout << "Result: " << rbegin.GetStatus() << endl;
 				break;
 
 			case 20:
 				cout << "Result: " << newList.ChangeValueByIterator(begin) << endl;
+				break;
+
+			case 21:
+				cout << "Iterator on: " << *begin << endl;
+				break;
+
+			case 22:
+				cout << "Reverse iterator on: " << *rbegin << endl;
 				break;
 
 			case 99: {
