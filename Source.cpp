@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+
 using namespace std;
 
 
@@ -38,32 +39,32 @@ public:
 
 	//Iterator reverseIterator
 	Iterator begin() {
-		Iterator backup;
-		backup.ptr = this;
-		backup.current = head;
+		Iterator iterator;
+		iterator.ptr = this;
+		iterator.current = head;
 
-		return backup;
+		return iterator;
 	}
 	Iterator end() {
-		Iterator It;
-		It.ptr = this;
-		It.current = NULL;
+		Iterator iterator;
+		iterator.ptr = this;
+		iterator.current = NULL;
 
-		return It;
+		return iterator;
 	}
 	ReverseIterator rbegin() {
-		ReverseIterator reverseIt;
-		reverseIt.ptr = this;
-		reverseIt.current = tail;
+		ReverseIterator reverse_iterator;
+		reverse_iterator.ptr = this;
+		reverse_iterator.current = tail;
 
-		return reverseIt;
+		return reverse_iterator;
 	}
 	ReverseIterator rend() {
-		ReverseIterator reverseIt;
-		reverseIt.ptr = this;
-		reverseIt.current = NULL;
+		ReverseIterator reverse_iterator;
+		reverse_iterator.ptr = this;
+		reverse_iterator.current = NULL;
 
-		return reverseIt;
+		return reverse_iterator;
 	}
 	//End Iterator;
 
@@ -296,6 +297,19 @@ public:
 		return ptr;
 	}
 
+	bool ChangeValueByIterator(Iterator iterator) {
+		T data;
+		
+		if (iterator.GetStatus() == false) {
+			cout << "Enter new value: ";
+			cin >> data;
+			*iterator = data;
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 	
 
 	void printList() {
@@ -320,12 +334,18 @@ public:
 	private:
 		List* ptr; //указатель на объект коллекции
 		Node* current; //указатель на текущий элемент коллекции
+		bool isBlocked;
 	public:
 		friend class List<T>;
 
 		Iterator() {
 			ptr = NULL;
 			current = NULL;
+			isBlocked = false;
+		}
+
+		bool GetStatus() {
+			return isBlocked;
 		}
 	
 		T& operator*() { //доспуп к данным текущего элемента
@@ -344,6 +364,10 @@ public:
 					if (current->pNext != NULL) {
 						current = current->pNext;
 					}
+					else {
+						current = NULL;
+						isBlocked = true;
+					}
 				}
 			}
 			else {
@@ -359,6 +383,10 @@ public:
 				{
 					if (current->pPrev != NULL) {
 						current = current->pPrev;
+					}
+					else {
+						current = NULL;
+						isBlocked = true;
 					}
 				}
 			}
@@ -376,12 +404,18 @@ public:
 	private:
 		List* ptr; //указатель на объект коллекции
 		Node* current; //указатель на текущий элемент коллекции
+		bool isBlocked;
 	public:
 		friend class List<T>;
 
 		ReverseIterator() {
 			ptr = NULL;
 			current = NULL;
+			isBlocked = false;
+		}
+
+		bool GetStatus() {
+			return isBlocked;
 		}
 
 		T& operator*() { //доспуп к данным текущего элемента
@@ -399,6 +433,10 @@ public:
 					if (current->pNext != NULL) {
 						current = current->pNext;
 					}
+					else {
+						current = NULL;
+						isBlocked = true;
+					}
 				}
 			}
 			else {
@@ -414,6 +452,10 @@ public:
 				{
 					if (current->pPrev != NULL) {
 						current = current->pPrev;
+					}
+					else {
+						current = NULL;
+						isBlocked = true;
 					}
 				}
 			}
@@ -461,7 +503,7 @@ int main() {
 	List<int>::Iterator begin, end;
 	List<int>::ReverseIterator rbegin, rend;
 
-	while (key != 0)
+	while (key != 123)
 	{
 		cout << endl << "Menu:" << endl
 			<< "[1]  Size of List" << endl
@@ -477,14 +519,15 @@ int main() {
 			<< "[11] Delete by index" << endl
 			<< "[12] Request begin() iterator" << endl
 			<< "[13] Request rbegin() reverse iterator" << endl
-			<< "[14] Request end() iterator" << endl
-			<< "[15] Request rend() reverse iterator" << endl
-			<< "[16] Interator ++" << endl
-			<< "[17] Iterator --" << endl
-			<< "[18] reverse Iterator ++" << endl
-			<< "[19] reverse Iterator --" << endl
+			<< "[14] Interator ++" << endl
+			<< "[15] Iterator --" << endl
+			<< "[16] reverse Iterator ++" << endl
+			<< "[17] reverse Iterator --" << endl
+			<< "[18] Request iterator status" << endl
+			<< "[19] Request reverse iterator status" << endl
+			<< "[20] Change value by iterator" << endl
 			<< "[99] Print List" << endl
-			<< "[0] Exit" << endl
+			<< "[123] Exit" << endl
 		    << "Enter number: ";
 
 		while (!(cin >> key)) {
@@ -501,23 +544,28 @@ int main() {
 				cout << "Size of List: " << newList.GetSize() << endl;
 				break;
 			}
+
 			case 2: {
 				cout << "Result:" << newList.Clear() << endl;
+				begin = newList.begin();
+				rbegin = newList.rbegin();
 				break;
 			}
+
 			case 3: {
 				cout << "Result:" << newList.IsEmpty() << endl;
 				break;
 			}
+
 			case 4: {
 				int data = 0;
 				cout << "Enter value: ";
 				cin >> data;
 
 				cout << "Result: " << newList.IsValueInList(data) << endl;
-
 				break;
 			}
+
 			case 5: {
 				int index = 0;
 				cout << "Enter index: ";
@@ -526,9 +574,9 @@ int main() {
 				cout << "Result: ";
 			
 				cout << newList.GetValueByIndex(index) << endl;
-
 				break;
 			}
+
 			case 6: {
 				int index = 0, data = 0;
 				cout << "Enter index: ";
@@ -538,18 +586,18 @@ int main() {
 
 				cout << "Result: ";
 				cout << newList.ChangeValueByIndex(index, data) << endl;
-
 				break;
 			}
+
 			case 7: {
 				int data = 0, index = -1;
 				cout << "Enter value: ";
 				cin >> data;
 
 				cout << "Result: " << newList.GetIndexByValue(data) << endl;
-
 				break;
 			}
+
 			case 8: {
 				int data = 0;
 				cout << "Enter value to add: ";
@@ -558,6 +606,7 @@ int main() {
 				break;
 
 			}
+
 			case 9: {
 				int index = 0, data = 0;
 				cout << "Enter index: ";
@@ -566,9 +615,9 @@ int main() {
 				cin >> data;
 
 				newList.InsertByIndex(index, data);
-
 				break;
 			}
+
 			case 10: {
 				int value = 0;
 				cout << "Enter value: ";
@@ -582,59 +631,61 @@ int main() {
 				else {
 					cout << "Incorrect value." << endl;
 				}
-
 				break;
 			}
+
 			case 11: {
 				int index = 0;
 				cout << "Enter index: ";
 				cin >> index;
 
 				cout << "Result: " << newList.DeleteByIndex(index);
-
 				break;
 			}
+
 			case 12: {
 				begin = newList.begin();
 				cout << "Iterator begin(): " << *begin << endl;
-
 				break;
 			}
+
 			case 13: {
 				rbegin = newList.rbegin();
 				cout << "reverseIterator rbegin(): " << *rbegin << endl;
+				break;
+			}
 
-				break;
-			}
-			case 14: {
-				end = newList.end();
-				cout << "Iterator end(): " << *end << endl;
-				break;
-			}
-			case 15: {
-				rend = newList.rend();
-				cout << "reverseIterator rend(): " << *rend << endl;
-				break;
-			}
-			case 16:
+			case 14:
 				begin++;
 				cout << "Iterator begin()++: " << *begin << endl;
-
 				break;
-			case 17:
+
+			case 15:
 				begin--;
 				cout << "Iterator begin()--: " << *begin << endl;
-
 				break;
-			case 18:
+
+			case 16:
 				rbegin++;
 				cout << "Iterator rbegin()++: " << *rbegin << endl;
-
 				break;
-			case 19:
+
+			case 17:
 				rbegin--;
 				cout << "Iterator rbegin()--: " << *rbegin << endl;
 				break;
+
+			case 18:
+				cout << "Result: " << begin.GetStatus() << endl;
+				break;
+			case 19:
+				cout << "Result: " << rbegin.GetStatus() << endl;
+				break;
+
+			case 20:
+				cout << "Result: " << newList.ChangeValueByIterator(begin) << endl;
+				break;
+
 			case 99: {
 				newList.printList();
 				break;
