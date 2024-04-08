@@ -144,6 +144,42 @@ public:
 		return -1;
 	}
 
+	Node* GetPtrByValue(T data) {
+		Node* ptr = head;
+
+		while (ptr != NULL) {
+			if (ptr->data == data) { // До конца списка, либо списка не существует
+				return ptr;
+			}
+			ptr = ptr->pNext;
+		}
+		return NULL;
+	}
+
+	bool DeleteByValue(T data) {
+		Node* ptr = GetPtrByValue(data);
+		if (ptr == NULL) { //Если элемента нет
+			return false;
+		}
+
+		if (ptr->pPrev == NULL) { //Если это первый элемент
+			return popFront();
+		}
+		if (ptr->pNext == NULL) { //Если это последний элемент
+			return popBack();
+		}
+
+		Node* left = ptr->pPrev;
+		Node* right = ptr->pNext;
+		left->pNext = right;
+		right->pPrev = left;
+
+		size--;
+		delete ptr;
+
+		return true;
+	}
+
 	bool DeleteByIndex(int index) { //11
 		Node* ptr = GetPtrByIndex(index);
 		if (ptr == NULL) { //Если элемента нет
@@ -276,15 +312,16 @@ public:
 
 	}
 
-	Node* InsertByIndex(int index, T data) { //Вставка по индексу
+	bool InsertByIndex(int index, T data) { //9 Вставка по индексу
 		Node* right = GetPtrByIndex(index); //Наш элемент
 		if (right == NULL) { //Если это конец списка
-			return pushBack(data);
+			return false;
 		}
 
 		Node* left = right->pPrev; //Слева от нашего
-		if (left == NULL) { //Если  список пуст
-			return pushFront(data);
+		if (left == NULL) {
+			pushFront(data);
+			return true;
 		}
 
 		Node* ptr = new Node(data); //Создали новый элемент
@@ -292,12 +329,12 @@ public:
 		ptr->pNext = right;
 		left->pNext = ptr;
 		right->pPrev = ptr;
-
 		size++;
-		return ptr;
+
+		return true;
 	}
 
-	bool ChangeValueByIterator(Iterator iterator) {
+	bool ChangeValueByIterator(Iterator iterator) { //20
 		T data;
 		
 		if (iterator.GetStatus() == false) {
@@ -570,9 +607,8 @@ int main() {
 				int index = 0;
 				cout << "Enter index: ";
 				cin >> index;
-				
+
 				cout << "Result: ";
-			
 				cout << newList.GetValueByIndex(index) << endl;
 				break;
 			}
@@ -593,7 +629,6 @@ int main() {
 				int data = 0, index = -1;
 				cout << "Enter value: ";
 				cin >> data;
-
 				cout << "Result: " << newList.GetIndexByValue(data) << endl;
 				break;
 			}
@@ -613,8 +648,7 @@ int main() {
 				cin >> index;
 				cout << "Enter value: ";
 				cin >> data;
-
-				newList.InsertByIndex(index, data);
+				cout << "Result: " << newList.InsertByIndex(index, data) << endl;
 				break;
 			}
 
@@ -622,15 +656,7 @@ int main() {
 				int value = 0;
 				cout << "Enter value: ";
 				cin >> value;
-
-				int index = newList.GetIndexByValue(value);
-				if (index != -1) {
-					newList.DeleteByIndex(index);
-					cout << "Value is delete." << endl;
-				}
-				else {
-					cout << "Incorrect value." << endl;
-				}
+				cout << "Result: " << newList.DeleteByValue(value) << endl;
 				break;
 			}
 
@@ -638,8 +664,7 @@ int main() {
 				int index = 0;
 				cout << "Enter index: ";
 				cin >> index;
-
-				cout << "Result: " << newList.DeleteByIndex(index);
+				cout << "Result: " << newList.DeleteByIndex(index) << endl;
 				break;
 			}
 
