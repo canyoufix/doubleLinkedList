@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 
-
 using namespace std;
 
 
@@ -305,8 +304,16 @@ public:
 	bool InsertByIndex(int index, T data) { //9 Вставка по индексу
 		Node* right = GetPtrByIndex(index); //Наш элемент
 		if (right == NULL) { //Если это конец списка
-			return false;
+			if (index <= GetSize()) {
+				pushBack(data);
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
+
+
 
 		Node* left = right->pPrev; //Слева от нашего
 		if (left == NULL) {
@@ -324,21 +331,6 @@ public:
 		return true;
 	}
 
-	bool ChangeValueByIterator(Iterator iterator) { //20
-		T data;
-		
-		if (iterator.GetStatus() == false) {
-			cout << "Enter new value: ";
-			cin >> data;
-			*iterator = data;
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-	
-
 	void printList() {
 		cout << "DATA:\t";
 		for (Node* ptr = head; ptr != NULL; ptr = ptr->pNext) {
@@ -354,7 +346,6 @@ public:
 		cout << endl;
 	}
 
-	
 	
 	class Iterator
 	{
@@ -379,11 +370,11 @@ public:
 		}
 	
 		T& operator*() { //доспуп к данным текущего элемента
-			if (current != NULL) {
-				return current->data;
+			if (isBlocked || current == NULL) {
+				throw exception();
 			}
 			else {
-				throw exception();
+				return current->data;
 			}
 		}
 
@@ -452,11 +443,11 @@ public:
 		}
 
 		T& operator*() { //доспуп к данным текущего элемента
-			if (current != NULL) {
-				return current->data;
+			if (isBlocked || current == NULL) {
+				throw exception();
 			}
 			else {
-				throw exception();
+				return current->data;
 			}
 		}
 
@@ -500,7 +491,6 @@ public:
 		}
 	};
 
-	
 };
 
 template <class T> List<T>::List() { //Конструктор по умолчанию
@@ -559,8 +549,9 @@ int main() {
 			<< "[18] Request iterator status" << endl
 			<< "[19] Request reverse iterator status" << endl
 			<< "[20] Change value by iterator" << endl
-			<< "[21] Where iterator?" << endl
-			<< "[22] Where reverse_iterator?" << endl
+			<< "[21] Change value by reverse_iterator" << endl
+			<< "[22] Where iterator?" << endl
+			<< "[23] Where reverse_iterator?" << endl
 			<< "[99] Print List" << endl
 			<< "[123] Exit" << endl
 		    << "Enter number: ";
@@ -713,14 +704,22 @@ int main() {
 				break;
 
 			case 20:
-				cout << "Result: " << newList.ChangeValueByIterator(begin) << endl;
+				cout << "Enter new value: ";
+				cin >> *begin;
+				cout << endl;
 				break;
 
 			case 21:
-				cout << "Iterator on: " << *begin << endl;
+				cout << "Enter new value: ";
+				cin >> *rbegin;
+				cout << endl;
 				break;
 
 			case 22:
+				cout << "Iterator on: " << *begin << endl;
+				break;
+
+			case 23:
 				cout << "Reverse iterator on: " << *rbegin << endl;
 				break;
 
@@ -735,7 +734,7 @@ int main() {
 		}
 		catch (const std::exception&)
 		{
-			cout << "Error." << endl;
+			cout << "Exeption." << endl;
 		}
 		
 	}
